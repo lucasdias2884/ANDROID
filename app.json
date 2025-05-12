@@ -19,10 +19,25 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lucasdias2884.estoquebebidas"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-font"
+    ],
+    "assetBundlePatterns": [
+      "assets/fonts/*",
+      "assets/images/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f1f87795-0531-47d2-ada2-d88ba6a61cb0"
+      }
+    },
+    "owner": "lucasdias2884"
   }
 }

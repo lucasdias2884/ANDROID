@@ -1,0 +1,33 @@
+# Dependências e logs de pacotes
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Pastas nativas (não usadas em projetos gerenciados)
+android
+ios
+*.keystore
+*.jks
+*.p12
+*.p8
+*.key
+*.mobileprovision
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Cache e builds locais
+.expo
+.expo-shared
+dist
+build
+web-build
+
+# Configurações de IDEs e editores
+.vscode
+.idea
+
+# Arquivos de ambiente sensíveis
+.env
+.env.*
