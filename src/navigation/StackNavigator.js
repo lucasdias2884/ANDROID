@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+// Telas do app
 import LoginScreen from '../screens/LoginScreen';
 import CadastroUsuarioScreen from '../screens/CadastroUsuarioScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -16,15 +17,12 @@ export default function StackNavigator() {
       initialRouteName="Login"
       screenOptions={{
         headerTitleAlign: 'center',
-        headerStyle: {
-          backgroundColor: '#6200ee',
-        },
+        headerStyle: { backgroundColor: '#6200ee' },
         headerTintColor: '#ffffff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
+        headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
+      {/* Telas de autenticação */}
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -35,11 +33,15 @@ export default function StackNavigator() {
         component={CadastroUsuarioScreen}
         options={{ title: 'Cadastro de Usuário' }}
       />
+
+      {/* Tela principal */}
       <Stack.Screen
         name="Home"
         component={HomeScreen}
         options={{ title: 'Início', headerBackVisible: false }}
       />
+
+      {/* Funcionalidades */}
       <Stack.Screen
         name="CadastroBebida"
         component={CadastroBebidaScreen}

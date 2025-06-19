@@ -7,7 +7,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { TextInput, Button, Snackbar, Text } from 'react-native-paper';
-import { cadastrarUsuario } from '../database/db';
+import { cadastrarUsuario } from '../database/usuarios'; // ✅ Atualizado
 
 export default function CadastroUsuarioScreen({ navigation }) {
   const [nome, setNome] = useState('');
@@ -33,25 +33,21 @@ export default function CadastroUsuarioScreen({ navigation }) {
       return;
     }
 
-    cadastrarUsuario(
-      nome.trim(),
-      senha.trim(),
-      () => {
-        setMensagem('Usuário cadastrado com sucesso!');
-        setTipoMensagem('sucesso');
-        limparCampos();
-        setTimeout(() => navigation.replace('Login'), 1500); // Melhorado para `replace`
-      },
-      (err) => {
-        console.error('Erro ao cadastrar usuário:', err);
-        setMensagem(
-          err.code === 'SQLITE_CONSTRAINT'
-            ? 'Erro: nome de usuário já está em uso.'
-            : 'Erro ao cadastrar usuário.'
-        );
-        setTipoMensagem('erro');
-      }
-    );
+    try {
+      cadastrarUsuario(nome.trim(), senha.trim());
+      setMensagem('Usuário cadastrado com sucesso!');
+      setTipoMensagem('sucesso');
+      limparCampos();
+      setTimeout(() => navigation.replace('Login'), 1500); // Redireciona após sucesso
+    } catch (err) {
+      console.error('❌ Erro ao cadastrar usuário:', err);
+      setMensagem(
+        err.message?.includes('cadastrado') || err.message?.includes('existente')
+          ? 'Erro: nome de usuário já está em uso.'
+          : 'Erro ao cadastrar usuário.'
+      );
+      setTipoMensagem('erro');
+    }
   };
 
   return (
@@ -61,7 +57,7 @@ export default function CadastroUsuarioScreen({ navigation }) {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-          <Text style={{ fontSize: 24, marginBottom: 20, textAlign: 'center' }}>
+          <Text style={{ fontSize: 24, marginBottom: 20, textAlign: 'center', fontWeight: 'bold' }}>
             Cadastro de Usuário
           </Text>
 
@@ -81,6 +77,7 @@ export default function CadastroUsuarioScreen({ navigation }) {
             mode="outlined"
             style={{ marginBottom: 25 }}
           />
+
           <Button mode="contained" onPress={handleCadastro}>
             Cadastrar
           </Button>

@@ -9,7 +9,7 @@ import {
   Keyboard
 } from 'react-native';
 import { Button, TextInput, Text } from 'react-native-paper';
-import { inserirBebida } from '../database/db';
+import { inserirBebida } from '../database/bebidas';
 
 export default function CadastroBebidaScreen({ navigation }) {
   const [nome, setNome] = useState('');
@@ -41,32 +41,23 @@ export default function CadastroBebidaScreen({ navigation }) {
       return;
     }
 
-    inserirBebida(
-      nome.trim(),
-      qtd,
-      valor,
-      () => {
-        try {
-          Alert.alert(
-            '✅ Bebida cadastrada!',
-            `Nome: ${nome}\nQuantidade: ${qtd}\nPreço: R$ ${valor.toFixed(2)}`
-          );
-          limparCampos();
-          setTimeout(() => navigation.goBack(), 1500); // Retorno automático após cadastro
-        } catch (e) {
-          console.error('Erro ao exibir mensagem de sucesso:', e);
-        }
-      },
-      (err) => {
-        console.error('❌ Erro ao inserir bebida:', err);
-        Alert.alert(
-          '❌ Erro',
-          err.code === 'SQLITE_CONSTRAINT'
-            ? 'Erro: Nome da bebida já cadastrado.'
-            : 'Não foi possível salvar a bebida no banco de dados.'
-        );
-      }
-    );
+    try {
+      inserirBebida(nome.trim(), qtd, valor);
+      limparCampos();
+      Alert.alert(
+        '✅ Bebida cadastrada!',
+        `Nome: ${nome}\nQuantidade: ${qtd}\nPreço: R$ ${valor.toFixed(2)}`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (err) {
+      console.error('❌ Erro ao inserir bebida:', err);
+      Alert.alert(
+        '❌ Erro',
+        err?.message?.includes('UNIQUE')
+          ? 'Erro: Nome da bebida já cadastrado.'
+          : 'Não foi possível salvar a bebida no banco de dados.'
+      );
+    }
   };
 
   return (
@@ -77,7 +68,14 @@ export default function CadastroBebidaScreen({ navigation }) {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-            <Text variant="headlineMedium" style={{ textAlign: 'center', marginBottom: 20, fontWeight: 'bold' }}>
+            <Text
+              variant="headlineMedium"
+              style={{
+                textAlign: 'center',
+                marginBottom: 20,
+                fontWeight: 'bold'
+              }}
+            >
               Cadastro de Bebida
             </Text>
 

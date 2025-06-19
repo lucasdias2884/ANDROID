@@ -7,10 +7,10 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
 } from 'react-native';
 import { Text, TextInput, Button, RadioButton } from 'react-native-paper';
-import { buscarBebidaPorNome, atualizarEstoque } from '../database/db';
+import { buscarBebidaPorNome, atualizarEstoque } from '../database/bebidas';
 
 export default function MovimentacaoEstoqueScreen({ navigation }) {
   const [nome, setNome] = useState('');
@@ -29,45 +29,42 @@ export default function MovimentacaoEstoqueScreen({ navigation }) {
       return;
     }
 
-    buscarBebidaPorNome(
-      nome.trim(),
-      (bebida) => {
-        if (!bebida) {
-          Alert.alert('❌ Bebida não encontrada!', `Nenhuma bebida com o nome "${nome}" foi localizada.`);
-          return;
-        }
+    try {
+      const bebida = buscarBebidaPorNome(nome.trim());
 
-        const novaQtd = tipo === 'entrada' ? bebida.quantidade + qtd : bebida.quantidade - qtd;
-
-        if (novaQtd < 0) {
-          Alert.alert('❌ Estoque insuficiente!', `Você só tem ${bebida.quantidade} unidades em estoque.`);
-          return;
-        }
-
-        atualizarEstoque(
-          bebida.id,
-          novaQtd,
-          () => {
-            Alert.alert(
-              '✅ Estoque atualizado!',
-              `Bebida: ${bebida.nome}\nTipo: ${tipo.toUpperCase()}\nAlteração: ${tipo === 'entrada' ? '+' : '-'}${qtd}\nNovo total: ${novaQtd}`
-            );
-            setNome('');
-            setQuantidade('');
-            setTipo('entrada');
-            setTimeout(() => navigation.goBack(), 1500); // Retorno automático após atualização
-          },
-          (erro) => {
-            console.error('Erro ao atualizar estoque:', erro);
-            Alert.alert('❌ Erro', 'Não foi possível atualizar o estoque.');
-          }
+      if (!bebida) {
+        Alert.alert(
+          '❌ Bebida não encontrada!',
+          `Nenhuma bebida com o nome "${nome}" foi localizada.`
         );
-      },
-      (erro) => {
-        console.error('Erro ao buscar bebida:', erro);
-        Alert.alert('❌ Erro', 'Erro ao acessar o banco de dados.');
+        return;
       }
-    );
+
+      const novaQtd = tipo === 'entrada' ? bebida.quantidade + qtd : bebida.quantidade - qtd;
+
+      if (novaQtd < 0) {
+        Alert.alert(
+          '❌ Estoque insuficiente!',
+          `Você só tem ${bebida.quantidade} unidades em estoque.`
+        );
+        return;
+      }
+
+      atualizarEstoque(bebida._id, novaQtd); // ✅ Realm usa _id
+
+      setNome('');
+      setQuantidade('');
+      setTipo('entrada');
+
+      Alert.alert(
+        '✅ Estoque atualizado!',
+        `Bebida: ${bebida.nome}\nTipo: ${tipo.toUpperCase()}\nAlteração: ${tipo === 'entrada' ? '+' : '-'}${qtd}\nNovo total: ${novaQtd}`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (erro) {
+      console.error('❌ Erro ao movimentar estoque:', erro);
+      Alert.alert('❌ Erro', 'Erro ao acessar o banco de dados.');
+    }
   };
 
   return (
@@ -79,7 +76,14 @@ export default function MovimentacaoEstoqueScreen({ navigation }) {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <View style={{ flex: 1, padding: 20, justifyContent: 'center' }}>
-              <Text variant="headlineMedium" style={{ textAlign: 'center', marginBottom: 20, fontWeight: 'bold' }}>
+              <Text
+                variant="headlineMedium"
+                style={{
+                  textAlign: 'center',
+                  marginBottom: 20,
+                  fontWeight: 'bold',
+                }}
+              >
                 Movimentar Estoque
               </Text>
 
@@ -102,12 +106,8 @@ export default function MovimentacaoEstoqueScreen({ navigation }) {
 
               <Text style={{ marginBottom: 5 }}>Tipo de Movimentação</Text>
               <RadioButton.Group onValueChange={setTipo} value={tipo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                  <RadioButton value="entrada" />
-                  <Text>Entrada</Text>
-                  <RadioButton value="saida" style={{ marginLeft: 20 }} />
-                  <Text>Saída</Text>
-                </View>
+                <RadioButton.Item label="Entrada" value="entrada" />
+                <RadioButton.Item label="Saída" value="saida" />
               </RadioButton.Group>
 
               <Button mode="contained" onPress={movimentarEstoque}>

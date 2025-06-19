@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, SafeAreaView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { Button, TextInput, Text, Snackbar } from 'react-native-paper';
-import { validarUsuario } from '../database/db';
+import { validarUsuario } from '../database/usuarios'; // ✅ Atualizado para Realm
 
 export default function LoginScreen({ navigation }) {
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
   const handleLogin = () => {
     if (!usuario.trim() || !senha.trim()) {
@@ -14,21 +22,22 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    validarUsuario(
-      usuario.trim(),
-      senha.trim(),
-      (usuarioEncontrado) => {
-        if (usuarioEncontrado) {
-          navigation.replace('Home');
-        } else {
-          setErro('Usuário ou senha inválidos!');
-        }
-      },
-      (err) => {
-        console.error('Erro ao validar usuário:', err);
-        setErro('Erro ao verificar login!');
+    setCarregando(true);
+
+    try {
+      const valido = validarUsuario(usuario.trim(), senha.trim());
+      setCarregando(false);
+
+      if (valido) {
+        navigation.replace('Home');
+      } else {
+        setErro('Usuário ou senha inválidos!');
       }
-    );
+    } catch (err) {
+      console.error('Erro ao validar usuário:', err);
+      setCarregando(false);
+      setErro('Erro ao verificar login!');
+    }
   };
 
   return (
@@ -39,7 +48,14 @@ export default function LoginScreen({ navigation }) {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-            <Text style={{ fontSize: 24, textAlign: 'center', marginBottom: 30, fontWeight: 'bold' }}>
+            <Text
+              style={{
+                fontSize: 24,
+                textAlign: 'center',
+                marginBottom: 30,
+                fontWeight: 'bold',
+              }}
+            >
               Login
             </Text>
 
@@ -63,11 +79,20 @@ export default function LoginScreen({ navigation }) {
               style={{ marginBottom: 25 }}
             />
 
-            <Button mode="contained" onPress={handleLogin} style={{ marginBottom: 10 }}>
+            <Button
+              mode="contained"
+              onPress={handleLogin}
+              loading={carregando}
+              disabled={carregando}
+              style={{ marginBottom: 10 }}
+            >
               Entrar
             </Button>
 
-            <Button mode="outlined" onPress={() => navigation.navigate('CadastroUsuario')}>
+            <Button
+              mode="outlined"
+              onPress={() => navigation.navigate('CadastroUsuario')}
+            >
               Criar nova conta
             </Button>
 
